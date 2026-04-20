@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Редактировать компанию</title>
@@ -12,66 +12,70 @@
             <h2 class="mb-0">✏️ Редактировать промышленную компанию</h2>
         </div>
         <div class="card-body">
-            <form th:action="@{/edit/{id}(id=${company.id})}" method="post">
+            <form action="/edit/{{.Company.ID}}" method="post">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Название компании:</label>
-                    <input type="text" name="name" th:value="${company.name}" class="form-control" required>
+                    <input type="text" name="name" value="{{.Company.Name}}" class="form-control" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Тип компании:</label>
                     <select name="type" class="form-select" disabled>
-                        <option th:selected="${company.type == 'coal'}" value="coal">⛏️ Угольная</option>
-                        <option th:selected="${company.type == 'oil'}" value="oil">🛢️ Нефтяная</option>
+                        <option {{if eq .Company.Type "coal"}}selected{{end}} value="coal">⛏️ Угольная</option>
+                        <option {{if eq .Company.Type "oil"}}selected{{end}} value="oil">🛢️ Нефтяная</option>
                     </select>
                     <small class="text-muted">Тип нельзя изменить после создания.</small>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Годовой оборот (млн руб):</label>
-                    <input type="number" name="turnover" th:value="${company.turnover}" class="form-control" required>
+                    <input type="number" name="turnover" value="{{.Company.Turnover}}" class="form-control" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Холдинговая компания:</label>
                     <select name="holdingId" class="form-select">
                         <option value="">— Без холдинга —</option>
-                        <option th:selected="${company.holdingId == 1}" value="1">ООО «ЭнергоХолдинг»</option>
-                        <option th:selected="${company.holdingId == 2}" value="2">АО «ПромИнвест»</option>
+                        <option {{if eq .Company.HoldingID 1}}selected{{end}} value="1">ООО «ЭнергоХолдинг»</option>
+                        <option {{if eq .Company.HoldingID 2}}selected{{end}} value="2">АО «ПромИнвест»</option>
                     </select>
                 </div>
 
                 <!-- Поля для угольной компании -->
-                <div th:if="${company.type == 'coal'}">
+                {{if eq .Company.Type "coal"}}
+                <div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Объем добычи угля (тыс. тонн):</label>
-                        <input type="number" name="coalVolume" th:value="${company.coalVolume}" class="form-control">
+                        <input type="number" name="coalVolume" value="{{.Company.CoalVolume}}" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Количество шахт:</label>
-                        <input type="number" name="mineCount" th:value="${company.mineCount}" class="form-control">
+                        <input type="number" name="mineCount" value="{{.Company.MineCount}}" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Действие по углю:</label>
-                        <textarea name="coalAction" class="form-control" rows="2" th:text="${company.coalAction}"></textarea>
+                        <textarea name="coalAction" class="form-control" rows="2">{{.Company.CoalAction}}</textarea>
                     </div>
                 </div>
+                {{end}}
 
                 <!-- Поля для нефтяной компании -->
-                <div th:if="${company.type == 'oil'}">
+                {{if eq .Company.Type "oil"}}
+                <div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Объем добычи нефти (тыс. баррелей):</label>
-                        <input type="number" name="oilVolume" th:value="${company.oilVolume}" class="form-control">
+                        <input type="number" name="oilVolume" value="{{.Company.OilVolume}}" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Количество скважин:</label>
-                        <input type="number" name="wellCount" th:value="${company.wellCount}" class="form-control">
+                        <input type="number" name="wellCount" value="{{.Company.WellCount}}" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Действие по нефти:</label>
-                        <textarea name="oilAction" class="form-control" rows="2" th:text="${company.oilAction}"></textarea>
+                        <textarea name="oilAction" class="form-control" rows="2">{{.Company.OilAction}}</textarea>
                     </div>
                 </div>
+                {{end}}
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary">💾 Сохранить</button>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Управление промышленными компаниями</title>
@@ -37,21 +37,23 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="company : ${companies}">
-                    <td th:text="${company.id}" class="text-center"></td>
-                    <td th:text="${company.name}"></td>
+                {{range .Companies}}
+                <tr>
+                    <td class="text-center">{{.ID}}</td>
+                    <td>{{.Name}}</td>
                     <td class="text-center">
-                        <span th:if="${company.type == 'coal'}" class="badge badge-coal">Угольная</span>
-                        <span th:if="${company.type == 'oil'}" class="badge badge-oil">Нефтяная</span>
+                        {{if eq .Type "coal"}}<span class="badge badge-coal">Угольная</span>{{end}}
+                        {{if eq .Type "oil"}}<span class="badge badge-oil">Нефтяная</span>{{end}}
                     </td>
-                    <td th:text="${company.turnover}" class="text-end"></td>
-                    <td th:text="${company.holdingName != null ? company.holdingName : '—'}"></td>
+                    <td class="text-end">{{.Turnover}}</td>
+                    <td>{{if .HoldingName}}{{.HoldingName}}{{else}}—{{end}}</td>
                     <td class="text-center">
-                        <a th:href="@{/info/{id}(id=${company.id})}" class="btn btn-info btn-sm">Подробнее</a>
-                        <a th:href="@{/edit/{id}(id=${company.id})}" class="btn btn-warning btn-sm">Редактировать</a>
-                        <a th:href="@{/delete/{id}(id=${company.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Удалить компанию?')">Удалить</a>
+                        <a href="/info/{{.ID}}" class="btn btn-info btn-sm">Подробнее</a>
+                        <a href="/edit/{{.ID}}" class="btn btn-warning btn-sm">Редактировать</a>
+                        <a href="/delete/{{.ID}}" class="btn btn-danger btn-sm" onclick="return confirm('Удалить компанию?')">Удалить</a>
                     </td>
                 </tr>
+                {{end}}
                 </tbody>
             </table>
         </div>

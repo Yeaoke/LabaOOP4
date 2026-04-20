@@ -3,7 +3,6 @@ from fastapi.responses import RedirectResponse
 from crud import crud
 from sqlalchemy import Session
 from database import get_db
-from models.industrial_companies import IndustrialCompanies_id
 
 app = FastAPI()
 
