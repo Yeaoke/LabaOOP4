@@ -5,7 +5,6 @@ from industrial_companies import IndustrialCompanies, Base
 class CoalCompany(IndustrialCompanies):
     __tablename__ = 'coal_company'
 
-    # Первичный ключ также является внешним ключом к родительской таблице
     id = Column(Integer, ForeignKey('industrial_companies.id'), primary_key=True)
     
     coal_volume = Column(BigInteger, nullable=True)
@@ -50,7 +49,6 @@ class CoalCompany(IndustrialCompanies):
     def stop_expanding(self):
         self.coal_action = "STOPPED"
         print("Производство остановлено")
-        # Дублируем логику setCoalAction из Java
         self.coal_action = "Производство остановлено"
 
     def __repr__(self):

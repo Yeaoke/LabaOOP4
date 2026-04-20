@@ -9,7 +9,7 @@ class crudRepository(Generic[T]):
         self.model = model
    
     def get(self, db: Session, id: Any) -> Optional[T]:
-        return db.get(self.model, id)
+        return db.query(self.model).filter(self.model.id == id).first()
 
     def create(self, db: Session, *, obj_in_data: dict) -> T:
         db_obj = self.model(**obj_in_data)

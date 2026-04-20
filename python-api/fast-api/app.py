@@ -1,5 +1,4 @@
 from fastapi import Depends, FastAPI
-from fastapi.responses import RedirectResponse
 from crud import crud
 from sqlalchemy import Session
 from database import get_db
@@ -8,24 +7,23 @@ app = FastAPI()
 
 @app.get("/")
 async def home(db: Session = Depends(get_db)):
-    crud.get_all(db)
-    return 
+    return crud.get_all(db) 
 
-@app.get("/add")
-async def add():
-    return crud.create(), RedirectResponse(url="/", status_code=303)
+@app.post("/add")
+async def create(db: Session = Depends(get_db)):
+    return crud.create(db)
 
-@app.get("/edit/{company_id}")
+@app.post("/edit/{company_id}")
 async def edit(company_id: int, db: Session = Depends(get_db)):
     crud.update(db)
-    return RedirectResponse(url="/", status_code=303), {"message": "Company was updated successfully", "id": company_id}
+    return {"message": "Company was updated successfully", "id": company_id}
 
 @app.get("/info")
 async def info(company_id: int, db: Session = Depends(get_db)):
     crud.get(db)
-    return RedirectResponse(url="/", status_code=303), {"message": "Info was got successfully", "id": company_id}
+    return {"message": "Info was got successfully", "id": company_id}
 
-@app.get("/delete/{company_id}")
+@app.delete("/delete/{company_id}")
 async def delete(company_id: int, db: Session = Depends(get_db)):
     crud.delete(db)
-    return RedirectResponse(url="/", status_code=303), {"message": "Company was deleted successfully", "id": company_id}
+    return {"message": "Company was deleted successfully", "id": company_id}

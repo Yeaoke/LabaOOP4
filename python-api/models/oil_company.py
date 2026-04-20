@@ -5,11 +5,10 @@ from industrial_companies import IndustrialCompanies, Base
 class OilCompany(IndustrialCompanies):
     __tablename__ = 'oil_company'
 
-    # Первичный ключ также является внешним ключом к родительской таблице
     id = Column(Integer, ForeignKey('industrial_companies.id'), primary_key=True)
     
     oil_volume = Column(BigInteger, nullable=True)
-    hole_count = Column('well_count', BigInteger, nullable=True) # mapped to well_count in DB if needed, but attr is holeCount in Java logic
+    hole_count = Column('well_count', BigInteger, nullable=True)
     oil_action = Column(String, nullable=True)
 
     __mapper_args__ = {

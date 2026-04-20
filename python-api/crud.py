@@ -7,12 +7,9 @@ from crudRepository import T
 class IndustrialCompaniesRepository(crudRepository[IndustrialCompanies]):
     def __init__(self, model):
         super().__init__(model)
-        
-    def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[T]:
-        stmt = select(self.model).offset(skip).limit(limit)
-        return list(db.scalars(stmt).all())
 
-    def get_all(self, db: Session) -> List[T]:
-        return db.query(self.model).all()    
+
+    def get_all(self, db: Session, skip: int = 0, limit: int = 100) -> List[T]:
+        return db.query(self.model).offset(skip).limit(limit).all()  
 
 crud = IndustrialCompaniesRepository()
