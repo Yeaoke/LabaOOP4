@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить компанию</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        function toggleFields() {
+            var type = document.getElementById('type').value;
+            document.getElementById('coalFields').style.display = type === 'coal' ? 'block' : 'none';
+            document.getElementById('oilFields').style.display = type === 'oil' ? 'block' : 'none';
+        }
+    </script>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h2 class="mb-0">➕ Добавить промышленную компанию</h2>
+        </div>
+        <div class="card-body">
+            <form action="/add" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Название компании:</label>
+                    <input type="text" name="name" class="form-control" placeholder="Введите название" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Тип компании:</label>
+                    <select name="type" id="type" class="form-select" onchange="toggleFields()" required>
+                        <option value="coal">⛏️ Угольная</option>
+                        <option value="oil">🛢️ Нефтяная</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Годовой оборот (млн руб):</label>
+                    <input type="number" name="turnover" class="form-control" placeholder="Например: 5000" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Холдинговая компания (опционально):</label>
+                    <select name="holdingId" class="form-select">
+                        <option value="">— Без холдинга —</option>
+                        <!-- В реальном проекте здесь должен быть цикл по списку холдингов -->
+                        <option value="1">ООО «ЭнергоХолдинг»</option>
+                        <option value="2">АО «ПромИнвест»</option>
+                    </select>
+                </div>
+
+                <!-- Поля для угольной компании -->
+                <div id="coalFields">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Объем добычи угля (тыс. тонн):</label>
+                        <input type="number" name="coalVolume" class="form-control" placeholder="Например: 1200">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Количество шахт:</label>
+                        <input type="number" name="mineCount" class="form-control" placeholder="Например: 5">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Действие по углю:</label>
+                        <textarea name="coalAction" class="form-control" rows="2" placeholder="Описание действий..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Поля для нефтяной компании -->
+                <div id="oilFields" style="display:none">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Объем добычи нефти (тыс. баррелей):</label>
+                        <input type="number" name="oilVolume" class="form-control" placeholder="Например: 800">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Количество скважин:</label>
+                        <input type="number" name="wellCount" class="form-control" placeholder="Например: 25">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Действие по нефти:</label>
+                        <textarea name="oilAction" class="form-control" rows="2" placeholder="Описание действий..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+                    <a href="/" class="btn btn-secondary">❌ Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>toggleFields();</script>
+</body>
+</html>

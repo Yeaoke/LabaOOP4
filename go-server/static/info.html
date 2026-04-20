@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Информация о компании</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h3 th:text="'🏭 Компания: ' + ${company.name}" class="mb-0"></h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr><th>ID</th><td th:text="${company.id}"></td></tr>
+                        <tr><th>Название</th><td th:text="${company.name}"></td></tr>
+                        <tr><th>Тип</th>
+                            <td>
+                                <span th:if="${company.type == 'coal'}" class="badge badge-coal">Угольная</span>
+                                <span th:if="${company.type == 'oil'}" class="badge badge-oil">Нефтяная</span>
+                            </td>
+                        </tr>
+                        <tr><th>Годовой оборот</th><td th:text="${company.turnover} + ' млн руб'"></td></tr>
+                        <tr><th>Холдинг</th><td th:text="${company.holdingName != null ? company.holdingName : '—'}"></td></tr>
+                    </table>
+                </div>
+
+                <!-- Специфичные поля -->
+                <div class="col-md-6">
+                    <div th:if="${company.type == 'coal'}">
+                        <h5 class="mt-3">⛏️ Данные по углю:</h5>
+                        <table class="table table-bordered">
+                            <tr><th>Объем добычи</th><td th:text="${company.coalVolume} + ' тыс. тонн'"></td></tr>
+                            <tr><th>Количество шахт</th><td th:text="${company.mineCount}"></td></tr>
+                            <tr><th>Действие</th><td th:text="${company.coalAction}"></td></tr>
+                        </table>
+                    </div>
+                    <div th:if="${company.type == 'oil'}">
+                        <h5 class="mt-3">🛢️ Данные по нефти:</h5>
+                        <table class="table table-bordered">
+                            <tr><th>Объем добычи</th><td th:text="${company.oilVolume} + ' тыс. баррелей'"></td></tr>
+                            <tr><th>Количество скважин</th><td th:text="${company.wellCount}"></td></tr>
+                            <tr><th>Действие</th><td th:text="${company.oilAction}"></td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <h5>⚙️ Действия:</h5>
+            <div th:if="${company.type == 'coal'}">
+                <form th:action="@{/action/update-coal/{id}(id=${company.id})}" method="post" class="d-inline">
+                    <input type="number" name="coalVolume" placeholder="Новый объем" class="form-control d-inline w-auto me-2">
+                    <button type="submit" class="btn btn-warning">📈 Обновить объем угля</button>
+                </form>
+            </div>
+            <div th:if="${company.type == 'oil'}">
+                <form th:action="@{/action/update-oil/{id}(id=${company.id})}" method="post" class="d-inline">
+                    <input type="number" name="oilVolume" placeholder="Новый объем" class="form-control d-inline w-auto me-2">
+                    <button type="submit" class="btn btn-warning">📈 Обновить объем нефти</button>
+                </form>
+            </div>
+
+            <div class="mt-3">
+                <a href="/" class="btn btn-primary">🏠 Назад к списку</a>
+                <a th:href="@{/edit/{id}(id=${company.id})}" class="btn btn-warning">✏️ Редактировать</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать компанию</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-warning">
+            <h2 class="mb-0">✏️ Редактировать промышленную компанию</h2>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/edit/{id}(id=${company.id})}" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Название компании:</label>
+                    <input type="text" name="name" th:value="${company.name}" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Тип компании:</label>
+                    <select name="type" class="form-select" disabled>
+                        <option th:selected="${company.type == 'coal'}" value="coal">⛏️ Угольная</option>
+                        <option th:selected="${company.type == 'oil'}" value="oil">🛢️ Нефтяная</option>
+                    </select>
+                    <small class="text-muted">Тип нельзя изменить после создания.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Годовой оборот (млн руб):</label>
+                    <input type="number" name="turnover" th:value="${company.turnover}" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Холдинговая компания:</label>
+                    <select name="holdingId" class="form-select">
+                        <option value="">— Без холдинга —</option>
+                        <option th:selected="${company.holdingId == 1}" value="1">ООО «ЭнергоХолдинг»</option>
+                        <option th:selected="${company.holdingId == 2}" value="2">АО «ПромИнвест»</option>
+                    </select>
+                </div>
+
+                <!-- Поля для угольной компании -->
+                <div th:if="${company.type == 'coal'}">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Объем добычи угля (тыс. тонн):</label>
+                        <input type="number" name="coalVolume" th:value="${company.coalVolume}" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Количество шахт:</label>
+                        <input type="number" name="mineCount" th:value="${company.mineCount}" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Действие по углю:</label>
+                        <textarea name="coalAction" class="form-control" rows="2" th:text="${company.coalAction}"></textarea>
+                    </div>
+                </div>
+
+                <!-- Поля для нефтяной компании -->
+                <div th:if="${company.type == 'oil'}">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Объем добычи нефти (тыс. баррелей):</label>
+                        <input type="number" name="oilVolume" th:value="${company.oilVolume}" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Количество скважин:</label>
+                        <input type="number" name="wellCount" th:value="${company.wellCount}" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Действие по нефти:</label>
+                        <textarea name="oilAction" class="form-control" rows="2" th:text="${company.oilAction}"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+                    <a href="/" class="btn btn-secondary">❌ Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

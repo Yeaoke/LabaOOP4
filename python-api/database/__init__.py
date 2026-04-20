@@ -11,6 +11,9 @@ engine = create_engine(DATABASE_URL)
 Base.metadata.create_all(engine)
 
 with Session(engine) as session:
-    
-    session.add()
-    session.commit()
+    try:
+        session.add()
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e

@@ -16,8 +16,6 @@ class IndustrialCompanies(Base):
     workingObjects = Column(Integer),
 
     def __init__(self, name: str = "", annualTurnover: int = 0, company_type: str = "", volume: int = 0, workingObjects: int = 0):
-        
-
         self.name = name,
         self.annualTurnover = annualTurnover,
         self.company_type = company_type,
