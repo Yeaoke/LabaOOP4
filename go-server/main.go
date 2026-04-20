@@ -1,6 +1,8 @@
 package main
 
 import (
+	"LabaOOP4/go-server/http"
+
 	"github.com/gorilla/mux"
 )
 
@@ -9,6 +11,6 @@ func main() {
 
 	pythonBackend := "http://localhost:8080"
 
-	r.HandleFunc("api/py", proxy.proxyHandler(pythonBackend))
+	r.HandleFunc("api/py", http.ProxyHandler(pythonBackend))
 
 }

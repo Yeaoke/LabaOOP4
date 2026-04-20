@@ -1,13 +1,18 @@
-from dataclasses import dataclass
-from typing import List, Optional
+from crudRepository import crudRepository
 from models.industrial_companies import IndustrialCompanies
-from models.coal_company import CoalCompany
-from models.oil_company import OilCompany
+from typing import List
+from sqlalchemy import Session, select
+from crudRepository import T
 
-class IndustrialCompamniesRepository:
-    def add(self, industrialCompany: IndustrialCompanies) -> None: raise NotImplementedError
-    def delete(self, industrialCompany: IndustrialCompanies) -> None: raise NotImplementedError
-    def update(self, industrialCompany: IndustrialCompanies) -> None: raise NotImplementedError
-    def gel_all(self) -> List[IndustrialCompanies]: raise NotImplementedError
+class IndustrialCompaniesRepository(crudRepository[IndustrialCompanies]):
+    def __init__(self, model):
+        super().__init__(model)
+        
+    def get_multi(self, db: Session, skip: int = 0, limit: int = 100) -> List[T]:
+        stmt = select(self.model).offset(skip).limit(limit)
+        return list(db.scalars(stmt).all())
 
-    
+    def get_all(self, db: Session) -> List[T]:
+        return db.query(self.model).all()    
+
+crud = IndustrialCompaniesRepository()

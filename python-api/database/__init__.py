@@ -1,19 +1,21 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session
+from contextlib import contextmanager
 
-class Base(DeclarativeBase):
-    pass
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-DATABASE_URL = "postgresql://postgres:password@localhost:5432/OOP2FFF"
 
+DATABASE_URL = "postgresql://postgres:MaL8033038@localhost:5432/OOP2FFF"
 engine = create_engine(DATABASE_URL)
+Base = declarative_base()
 
-Base.metadata.create_all(engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Также как в java create-update
+Base.metadata.update_all(engine)
 
-with Session(engine) as session:
+@contextmanager
+def get_db():
+    db = SessionLocal()
     try:
-        session.add()
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        raise e
+        yield db
+    finally:
+        db.close()    
