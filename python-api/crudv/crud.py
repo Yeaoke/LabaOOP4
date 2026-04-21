@@ -1,8 +1,8 @@
-from crudRepository import crudRepository
+from repository.crudRepository import crudRepository
 from models.industrial_companies import IndustrialCompanies
 from typing import List
 from sqlalchemy import Session, select
-from crudRepository import T
+from repository.crudRepository import T
 
 class IndustrialCompaniesRepository(crudRepository[IndustrialCompanies]):
     def __init__(self, model):
@@ -12,4 +12,4 @@ class IndustrialCompaniesRepository(crudRepository[IndustrialCompanies]):
     def get_all(self, db: Session, skip: int = 0, limit: int = 100) -> List[T]:
         return db.query(self.model).offset(skip).limit(limit).all()  
 
-crud = IndustrialCompaniesRepository()
+CRUD = IndustrialCompaniesRepository()
