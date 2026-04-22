@@ -18,8 +18,18 @@ type IndustrialCompanies struct {
 	Oil_action string `json:"oil_action,omitempty"`
 }
 
-func NewCoalCompany() *IndustrialCompanies {
-	return &IndustrialCompanies{
-		//	ID: uuid.New(),
-	}
+type IndustrialCompaniesResponse struct {
+	ID               uuid.UUID `json:"id"`
+	CompanyName      string    `json:"company_name"`
+	AnnualTurnover   *int      `json:"annual_turnover,omitempty"`
+	Type             string    `json:"type"`
+	HoldingCompanyID *int      `json:"holding_companies_id,omitempty"`
+
+	CoalVolume *int    `json:"coal_volume,omitempty"`
+	MineCount  *int    `json:"mine_count,omitempty"`
+	CoalAction *string `json:"coal_action,omitempty"`
+
+	OilVolume *int    `json:"oil_volume,omitempty"`
+	WellCount *int    `json:"well_count,omitempty"`
+	OilAction *string `json:"oil_action,omitempty"`
 }
