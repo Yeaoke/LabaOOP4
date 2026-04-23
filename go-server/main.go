@@ -14,17 +14,25 @@ import (
 func main() {
 	cfg.Validate = validator.New()
 
-	cfg.InitHTTPClient()
+	pythonBackend := "http://localhost:8081"
 
+	proxy, err := handlers.NewProxy(pythonBackend)
+	if err != nil {
+		log.Fatal("Failed create proxy", err)
+	}
 	r := mux.NewRouter()
 
+	// Рендеринг static
 	r.HandleFunc("/", html.PageHome)
-	r.HandleFunc("/add", handlers.AddHandler)
-	r.HandleFunc("/info", handlers.InfoHandler)
-	r.HandleFunc("/edit", handlers.EditHandler)
+	r.HandleFunc("/add", html.AddPageRendering)
+	r.HandleFunc("/info", html.InfoPageRendering)
+	r.HandleFunc("/edit", html.EditPageRendering)
 
-	println("API Gateway :8080")
-	println("Backend: ", "http://localhost:8081")
+	// Проксирование handlers
+	r.PathPrefix("api").Handler(http.StripPrefix("api", proxy))
+
+	println("BFF (Go - Server): 8080")
+	println("Backend: ", pythonBackend)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err.Error())
