@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 Base = declarative_base()
 
-class IndustrialCompanies(Base, ABC):
+class IndustrialCompanies(Base):
     __tablename__ = 'industrial_companies'
 
     id = Column(Integer, primary_key=True)

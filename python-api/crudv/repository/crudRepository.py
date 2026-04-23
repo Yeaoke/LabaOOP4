@@ -1,5 +1,5 @@
 from typing import Any, Generic, List, Optional, Type, TypeVar
-from sqlalchemy import Session
+from sqlalchemy.orm import Session
 from models.industrial_companies import IndustrialCompanies
 
 T = TypeVar("T", bound=True)

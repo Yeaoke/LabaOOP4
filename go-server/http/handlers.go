@@ -41,7 +41,7 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func InfoHandler(w http.ResponseWriter, r *http.Request) {
-
+	//var req dto.IndustrialCompaniesResponse
 }
 
 func EditHandler(w http.ResponseWriter, r *http.Request) {

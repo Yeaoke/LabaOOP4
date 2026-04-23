@@ -1,15 +1,15 @@
 from fastapi import Depends, FastAPI
-from crudv import CRUD
-from sqlalchemy import Session
+from crudv.crud import CRUD
+from sqlalchemy.orm import Session
 
 from database import get_db
 import os
 
-app = FastAPI()
+app = FastAPI(root_path="/api")
 
 backendURL = os.getenv("backendPython", "http://localhost:8081")
 
-@app.get("/")
+@app.get("/")   
 async def home(db: Session = Depends(get_db)):
     return CRUD.get_all(db) 
 

@@ -2,7 +2,7 @@ package cache
 
 import (
 	"LabaOOP4/go-server/models"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,6 +15,6 @@ func Caching(id uuid.UUID, model models.IndustrialCompanies) {
 	cache.Add(id, model)
 
 	if company, ok := cache.Get(id); ok {
-		fmt.Println(company)
+		log.Println(company)
 	}
 }
