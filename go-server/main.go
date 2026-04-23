@@ -29,7 +29,7 @@ func main() {
 	r.HandleFunc("/edit", html.EditPageRendering)
 
 	// Проксирование handlers
-	r.PathPrefix("api").Handler(http.StripPrefix("api", proxy))
+	r.PathPrefix("/api/").Handler(http.StripPrefix("/api/", proxy))
 
 	println("BFF (Go - Server): 8080")
 	println("Backend: ", pythonBackend)

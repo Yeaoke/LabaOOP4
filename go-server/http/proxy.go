@@ -6,7 +6,7 @@ import (
 )
 
 func NewProxy(targetAPI string) (*httputil.ReverseProxy, error) {
-	url, err := url.Parse("api/py" + targetAPI)
+	url, err := url.Parse(targetAPI)
 	if err != nil {
 		return nil, err
 	}
