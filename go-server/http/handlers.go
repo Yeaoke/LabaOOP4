@@ -128,7 +128,7 @@ func EditHandler(target string) http.HandlerFunc {
 
 		jsonData, _ := json.Marshal(req)
 
-		resp, err := http.Post(targetURL, "aplication/json", bytes.NewBuffer(jsonData))
+		resp, err := http.Post(targetURL, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
 			http.Error(w, "Failed to get answer from server", http.StatusBadGateway)
 			return
@@ -161,15 +161,40 @@ func DeleteHandler(target string) http.HandlerFunc {
 			return
 		}
 
-		if req.ID == uuid.Nil {
-			req.ID = uuid.New()
+		if req.ID != uuid.Nil {
+			cache.CacheRemove(req.ID)
 		}
 
-		cache.CacheRemove(req.ID)
+		targetURL := target + "/delete"
 
-		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(req); err != nil {
-			log.Printf("Failed to encode response: %v", err)
+		jsonData, _ := json.Marshal(req)
+
+		proxy, err := http.NewRequest(http.MethodDelete, targetURL, bytes.NewBuffer(jsonData))
+		if err != nil {
+			http.Error(w, "failed create request to backend", http.StatusBadGateway)
+			return
+		}
+
+		proxy.Header.Set("Content-type", "application/json")
+
+		client := &http.Client{}
+		resp, err := client.Do(proxy)
+		if err != nil {
+			http.Error(w, "Failed reach backend", http.StatusBadGateway)
+			return
+		}
+		defer resp.Body.Close()
+
+		var response dto.IndustrialCompanies
+		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+			http.Error(w, "Failed decode answer from backend", http.StatusBadGateway)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(resp.StatusCode)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed encode", http.StatusConflict)
 			return
 		}
 	}

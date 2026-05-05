@@ -27,6 +27,6 @@ class crudRepository(Generic[T]):
         return db_obj    
 
     def delete(self, db: Session, *, id: int) -> Optional[T]:
-        db.query(self.model).filter(IndustrialCompanies.id == id).delete()
-        db.commit()
+    db.query(self.model).filter(self.model.id == id).delete() 
+    db.commit()
     

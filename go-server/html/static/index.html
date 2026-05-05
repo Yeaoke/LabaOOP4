@@ -17,45 +17,49 @@
 <body>
 <div class="container mt-4">
     <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h1 class="text-center mb-0">🏭 Система управления промышленными компаниями</h1>
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">🏭 Промышленные компании</h1>
+            <a href="/add" class="btn btn-light btn-sm">➕ Добавить</a>
         </div>
         <div class="card-body">
-            <div class="mb-3">
-                <a href="/add" class="btn btn-success">➕ Добавить компанию</a>
-            </div>
-
+            {{if .Companies}}
             <table class="table table-striped table-bordered table-hover">
                 <thead>
                 <tr>
                     <th>ID</th>
                     <th>Название</th>
                     <th>Тип</th>
-                    <th>Оборот (млн руб)</th>
+                    <th class="text-end">Оборот (млн ₽)</th>
                     <th>Холдинг</th>
-                    <th>Действия</th>
+                    <th class="text-center">Действия</th>
                 </tr>
                 </thead>
                 <tbody>
                 {{range .Companies}}
                 <tr>
-                    <td class="text-center">{{.ID}}</td>
-                    <td>{{.Name}}</td>
+                    <td class="text-center small">{{.ID}}</td>
+                    <td><strong>{{.CompanyName}}</strong></td>
                     <td class="text-center">
-                        {{if eq .Type "coal"}}<span class="badge badge-coal">Угольная</span>{{end}}
-                        {{if eq .Type "oil"}}<span class="badge badge-oil">Нефтяная</span>{{end}}
+                        {{if eq .CompanyType "coal"}}<span class="badge badge-coal">Угольная</span>{{end}}
+                        {{if eq .CompanyType "oil"}}<span class="badge badge-oil">Нефтяная</span>{{end}}
                     </td>
-                    <td class="text-end">{{.Turnover}}</td>
-                    <td>{{if .HoldingName}}{{.HoldingName}}{{else}}—{{end}}</td>
+                    <td class="text-end">{{.AnnualTurnover}}</td>
+                    <td>{{if .HoldingName}}{{.HoldingName}}{{else}}<span class="text-muted">—</span>{{end}}</td>
                     <td class="text-center">
-                        <a href="/info/{{.ID}}" class="btn btn-info btn-sm">Подробнее</a>
-                        <a href="/edit/{{.ID}}" class="btn btn-warning btn-sm">Редактировать</a>
-                        <a href="/delete/{{.ID}}" class="btn btn-danger btn-sm" onclick="return confirm('Удалить компанию?')">Удалить</a>
+                        <a href="/info/{{.ID}}" class="btn btn-info btn-sm">👁️</a>
+                        <a href="/edit/{{.ID}}" class="btn btn-warning btn-sm">✏️</a>
+                        <a href="/delete/{{.ID}}" class="btn btn-danger btn-sm" onclick="return confirm('Удалить компанию {{.CompanyName}}?')">🗑️</a>
                     </td>
                 </tr>
                 {{end}}
                 </tbody>
             </table>
+            {{else}}
+            <div class="text-center py-5">
+                <p class="text-muted">📭 Компании не найдены</p>
+                <a href="/add" class="btn btn-success">➕ Добавить первую компанию</a>
+            </div>
+            {{end}}
         </div>
     </div>
 </div>

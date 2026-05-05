@@ -12,78 +12,114 @@
             <h2 class="mb-0">✏️ Редактировать промышленную компанию</h2>
         </div>
         <div class="card-body">
-            <form action="/edit/{{.Company.ID}}" method="post">
+            <form action="/api/edit/{{.Company.ID}}" method="post" id="editForm">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Название компании:</label>
-                    <input type="text" name="name" value="{{.Company.Name}}" class="form-control" required>
+                    <input type="text" name="company_name" value="{{.Company.CompanyName}}" class="form-control" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Тип компании:</label>
-                    <select name="type" class="form-select" disabled>
-                        <option {{if eq .Company.Type "coal"}}selected{{end}} value="coal">⛏️ Угольная</option>
-                        <option {{if eq .Company.Type "oil"}}selected{{end}} value="oil">🛢️ Нефтяная</option>
+                    <select class="form-select" disabled>
+                        <option {{if eq .Company.CompanyType "coal"}}selected{{end}} value="coal">⛏️ Угольная</option>
+                        <option {{if eq .Company.CompanyType "oil"}}selected{{end}} value="oil">🛢️ Нефтяная</option>
                     </select>
                     <small class="text-muted">Тип нельзя изменить после создания.</small>
+                    <input type="hidden" name="company_type" value="{{.Company.CompanyType}}">
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Годовой оборот (млн руб):</label>
-                    <input type="number" name="turnover" value="{{.Company.Turnover}}" class="form-control" required>
+                    <input type="number" name="annual_turnover" value="{{.Company.AnnualTurnover}}" class="form-control" required min="0">
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Холдинговая компания:</label>
-                    <select name="holdingId" class="form-select">
-                        <option value="">— Без холдинга —</option>
-                        <option {{if eq .Company.HoldingID 1}}selected{{end}} value="1">ООО «ЭнергоХолдинг»</option>
-                        <option {{if eq .Company.HoldingID 2}}selected{{end}} value="2">АО «ПромИнвест»</option>
-                    </select>
+                    <label class="form-label fw-bold">Название холдинга:</label>
+                    <input type="text" name="holding_name" value="{{.Company.HoldingName}}" class="form-control" placeholder="Введите название холдинга">
                 </div>
 
                 <!-- Поля для угольной компании -->
-                {{if eq .Company.Type "coal"}}
-                <div>
+                {{if eq .Company.CompanyType "coal"}}
+                <div class="border-top pt-3 mt-3">
+                    <h5 class="text-secondary">⛏️ Данные по углю</h5>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Объем добычи угля (тыс. тонн):</label>
-                        <input type="number" name="coalVolume" value="{{.Company.CoalVolume}}" class="form-control">
+                        <label class="form-label">Объем добычи угля (тыс. тонн):</label>
+                        <input type="number" name="coal_volume" value="{{.Company.Coal_volume}}" class="form-control" min="0">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Количество шахт:</label>
-                        <input type="number" name="mineCount" value="{{.Company.MineCount}}" class="form-control">
+                        <label class="form-label">Количество шахт:</label>
+                        <input type="number" name="mineCount" value="{{.Company.MineCount}}" class="form-control" min="1">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Действие по углю:</label>
-                        <textarea name="coalAction" class="form-control" rows="2">{{.Company.CoalAction}}</textarea>
+                        <label class="form-label">Действие по углю:</label>
+                        <textarea name="coal_action" class="form-control" rows="2">{{.Company.Coal_action}}</textarea>
                     </div>
                 </div>
                 {{end}}
 
                 <!-- Поля для нефтяной компании -->
-                {{if eq .Company.Type "oil"}}
-                <div>
+                {{if eq .Company.CompanyType "oil"}}
+                <div class="border-top pt-3 mt-3">
+                    <h5 class="text-secondary">🛢️ Данные по нефти</h5>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Объем добычи нефти (тыс. баррелей):</label>
-                        <input type="number" name="oilVolume" value="{{.Company.OilVolume}}" class="form-control">
+                        <label class="form-label">Объем добычи нефти (тыс. баррелей):</label>
+                        <input type="number" name="oil_volume" value="{{.Company.Oil_volume}}" class="form-control" min="0">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Количество скважин:</label>
-                        <input type="number" name="wellCount" value="{{.Company.WellCount}}" class="form-control">
+                        <label class="form-label">Количество скважин:</label>
+                        <input type="number" name="holeCount" value="{{.Company.HoleCount}}" class="form-control" min="1">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Действие по нефти:</label>
-                        <textarea name="oilAction" class="form-control" rows="2">{{.Company.OilAction}}</textarea>
+                        <label class="form-label">Действие по нефти:</label>
+                        <textarea name="oil_action" class="form-control" rows="2">{{.Company.Oil_action}}</textarea>
                     </div>
                 </div>
                 {{end}}
 
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+                    <button type="submit" class="btn btn-primary">💾 Сохранить изменения</button>
                     <a href="/" class="btn btn-secondary">❌ Отмена</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {};
+    formData.forEach((value, key) => {
+        if (value) {
+            if (['annual_turnover', 'coal_volume', 'mineCount', 'oil_volume', 'holeCount'].includes(key)) {
+                data[key] = parseInt(value) || 0;
+            } else {
+                data[key] = value;
+            }
+        }
+    });
+
+    const companyId = "{{.Company.ID}}";
+    
+    try {
+        const response = await fetch(`/api/edit/${companyId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            window.location.href = '/';
+        } else {
+            const err = await response.text();
+            alert('Ошибка: ' + err);
+        }
+    } catch (err) {
+        alert('Ошибка сети: ' + err.message);
+    }
+});
+</script>
 </body>
 </html>

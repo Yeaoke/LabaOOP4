@@ -16,10 +16,6 @@ func main() {
 
 	pythonBackend := "http://localhost:8081"
 
-	proxy, err := handlers.NewProxy(pythonBackend)
-	if err != nil {
-		log.Fatal("Failed create proxy", err)
-	}
 	r := mux.NewRouter()
 
 	// Рендеринг static
@@ -27,8 +23,18 @@ func main() {
 	r.HandleFunc("/add", html.AddPageRendering)
 	r.HandleFunc("/info", html.InfoPageRendering)
 	r.HandleFunc("/edit", html.EditPageRendering)
+	r.HandleFunc("/delete", html.DeletePageRendering)
 
 	// Проксирование handlers
+	r.HandleFunc("/api/add", handlers.AddHandler(pythonBackend)).Methods(http.MethodPost)
+	r.HandleFunc("/api/edit/{id}", handlers.EditHandler(pythonBackend)).Methods(http.MethodPost)
+	r.HandleFunc("/api/info/{id}", handlers.InfoHandler(pythonBackend)).Methods(http.MethodGet)
+	r.HandleFunc("/api/delete/{id}", handlers.DeleteHandler(pythonBackend)).Methods(http.MethodPost)
+
+	proxy, err := handlers.NewProxy(pythonBackend)
+	if err != nil {
+		log.Fatal("Failed create proxy", err)
+	}
 	r.PathPrefix("/api/").Handler(http.StripPrefix("/api/", proxy))
 
 	println("BFF (Go - Server): 8080")

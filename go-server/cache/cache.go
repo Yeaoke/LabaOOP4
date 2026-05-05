@@ -33,6 +33,14 @@ func CacheCheck(id uuid.UUID) {
 
 	company, ok := cache.Get(id)
 	if ok {
-		log.Fatal("Error with find cache", company)
+		log.Println("Error with find cache", company)
 	}
+}
+
+func CacheGet(id uuid.UUID) (dto.IndustrialCompanies, bool) {
+	return cache.Get(id)
+}
+
+func CacheClean() {
+	cache.Purge()
 }
