@@ -13,28 +13,12 @@ var cache = expirable.NewLRU[uuid.UUID, dto.IndustrialCompanies](100, nil, time.
 
 func CacheAdd(id uuid.UUID, model dto.IndustrialCompanies) {
 	cache.Add(id, model)
-
-	if company, ok := cache.Get(id); ok {
-		log.Println(company)
-	}
+	log.Printf("Cache ADD: %s - %s", id, model.CompanyName)
 }
 
 func CacheRemove(id uuid.UUID) {
 	cache.Remove(id)
-
-	company, ok := cache.Get(id)
-	if ok {
-		log.Fatal("Error with deleting cache", company)
-	}
-}
-
-func CacheCheck(id uuid.UUID) {
-	cache.Peek(id)
-
-	company, ok := cache.Get(id)
-	if ok {
-		log.Println("Error with find cache", company)
-	}
+	log.Printf("Cache REMOVE: %s", id)
 }
 
 func CacheGet(id uuid.UUID) (dto.IndustrialCompanies, bool) {
@@ -43,4 +27,5 @@ func CacheGet(id uuid.UUID) (dto.IndustrialCompanies, bool) {
 
 func CacheClean() {
 	cache.Purge()
+	log.Println("Cache CLEANED")
 }

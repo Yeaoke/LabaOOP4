@@ -11,25 +11,25 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ... импорты ...
+
 func main() {
 	cfg.Validate = validator.New()
-
 	pythonBackend := "http://localhost:8081"
-
 	r := mux.NewRouter()
 
-	// Рендеринг static
+	// Рендеринг страниц
 	r.HandleFunc("/", html.PageHome)
 	r.HandleFunc("/add", html.AddPageRendering)
-	r.HandleFunc("/info", html.InfoPageRendering)
-	r.HandleFunc("/edit", html.EditPageRendering)
-	r.HandleFunc("/delete", html.DeletePageRendering)
+	r.HandleFunc("/info/{id}", html.InfoPageRendering)
+	r.HandleFunc("/edit/{id}", html.EditPageRendering)
+	r.HandleFunc("/delete/{id}", html.DeletePageRendering)
 
-	// Проксирование handlers
+	// Проксирование API
 	r.HandleFunc("/api/add", handlers.AddHandler(pythonBackend)).Methods(http.MethodPost)
 	r.HandleFunc("/api/edit/{id}", handlers.EditHandler(pythonBackend)).Methods(http.MethodPost)
 	r.HandleFunc("/api/info/{id}", handlers.InfoHandler(pythonBackend)).Methods(http.MethodGet)
-	r.HandleFunc("/api/delete/{id}", handlers.DeleteHandler(pythonBackend)).Methods(http.MethodPost)
+	r.HandleFunc("/api/delete/{id}", handlers.DeleteHandler(pythonBackend)).Methods(http.MethodDelete)
 
 	proxy, err := handlers.NewProxy(pythonBackend)
 	if err != nil {

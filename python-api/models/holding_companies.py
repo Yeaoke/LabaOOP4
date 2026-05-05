@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship, declarative_base
-from industrial_companies import Base, IndustrialCompanies
+from sqlalchemy.orm import relationship 
+from models.industrial_companies import Base
+
 
 class HoldingCompanies(Base):
     __tablename__ = 'holding_companies'
@@ -10,18 +11,15 @@ class HoldingCompanies(Base):
 
     industrial_companies = relationship(
         "IndustrialCompanies", 
-        back_populates="holding_company", 
-        cascade="all, delete-orphan",
-        lazy="joined" 
+        back_populates="holding_company",
+        foreign_keys="IndustrialCompanies.holding_companies_id"
     )
 
     def __init__(self, holding_name: str):
         self.holding_name = holding_name
-        self.industrial_companies = []
 
-    def add_company(self, company: IndustrialCompanies):
+    def add_company(self, company):
         self.industrial_companies.append(company)
-        company.holding_company = self
 
     def __repr__(self):
-        return f"Holding(id={self.id}, name='{self.holding_name}', companies={len(self.industrial_companies)})"
+        return f"Holding(id={self.id}, name='{self.holding_name}')"

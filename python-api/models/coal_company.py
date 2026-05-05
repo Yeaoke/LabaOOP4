@@ -1,23 +1,34 @@
-from sqlalchemy import Column, String, BigInteger, Integer, ForeignKey
+from sqlalchemy import Column, Integer, BigInteger, String, ForeignKey
 from sqlalchemy.orm import relationship
-from industrial_companies import IndustrialCompanies, Base
+from models.industrial_companies import IndustrialCompanies, Base
+
 
 class CoalCompany(IndustrialCompanies):
     __tablename__ = 'coal_company'
 
-    id = Column(Integer, ForeignKey('industrial_companies.id'), primary_key=True)
+    id = Column(
+        Integer, 
+        ForeignKey('industrial_companies.id', ondelete='CASCADE'), 
+        primary_key=True
+    )
     
     coal_volume = Column(BigInteger, nullable=True)
-    mine_count = Column(BigInteger, nullable=True)
-    coal_action = Column(String, nullable=True)
+    mine_count = Column(BigInteger, nullable=True) 
+    coal_action = Column(String(255), nullable=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'CoalCompany',
     }
 
     def __init__(self, company_name: str, annual_turnover: int = None, 
-        coal_volume: int = None, mine_count: int = None):
-        super().__init__(company_name, annual_turnover)
+                 coal_volume: int = None, mine_count: int = None, 
+                 holding_companies_id: int = None):
+        super().__init__(
+            company_name, 
+            annual_turnover, 
+            company_type='CoalCompany',
+            holding_companies_id=holding_companies_id
+        )
         self.coal_volume = coal_volume
         self.mine_count = mine_count
         self.coal_action = None
@@ -33,23 +44,26 @@ class CoalCompany(IndustrialCompanies):
             print(f"Действие: {self.coal_action}")
 
     def cost_of_time_production(self):
-        if (self.coal_volume is not None and self.coal_volume > 0 
-                and self.annual_turnover is not None):
+        if self.coal_volume and self.coal_volume > 0 and self.annual_turnover:
             counter = self.annual_turnover // self.coal_volume
-            print(f"Стоимость за единицу: {counter}")
             self.coal_action = f"Стоимость за единицу: {counter}"
+            return counter
+        return None
 
     def add_coal_mines(self, count: int):
-        if count is not None and count > 0:
-            current_mines = self.mine_count if self.mine_count is not None else 0
-            self.mine_count = current_mines + count
-            print(f"Добавлено шахт: {count}")
+        if count and count > 0:
+            current = self.mine_count or 0
+            self.mine_count = current + count
             self.coal_action = f"Добавлено шахт: {count}"
 
     def stop_expanding(self):
-        self.coal_action = "STOPPED"
-        print("Производство остановлено")
         self.coal_action = "Производство остановлено"
 
-    def __repr__(self):
-        return super().__repr__()
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            "coal_volume": self.coal_volume,
+            "mineCount": self.mine_count,
+            "coal_action": self.coal_action,
+        })
+        return data

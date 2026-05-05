@@ -5,13 +5,12 @@ import (
 	cfg "LabaOOP4/go-server/config"
 	dto "LabaOOP4/go-server/dto"
 	"bytes"
-	"log"
-
-	//"LabaOOP4/go-server/dto"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func AddHandler(target string) http.HandlerFunc {
@@ -19,12 +18,12 @@ func AddHandler(target string) http.HandlerFunc {
 		var req dto.IndustrialCompanies
 
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid JSON"+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if err := cfg.Validate.Struct(&req); err != nil {
-			http.Error(w, "Validation error"+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Validation error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -34,168 +33,153 @@ func AddHandler(target string) http.HandlerFunc {
 
 		jsonData, _ := json.Marshal(req)
 
-		resp, err := http.Post(target, "application/json", bytes.NewBuffer(jsonData))
+		resp, err := http.Post(target+"/add", "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
-			http.Error(w, "Failed read buffer", http.StatusBadGateway)
+			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
+			return
 		}
-
 		defer resp.Body.Close()
 
 		var response dto.IndustrialCompanies
-
 		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			http.Error(w, "Failed decode", http.StatusInternalServerError)
+			http.Error(w, "Failed to decode response", http.StatusInternalServerError)
 			return
 		}
 
 		cache.CacheAdd(response.ID, response)
 
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(resp.StatusCode)
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.Printf("Failed to encode response: %v", err)
-			return
 		}
 	}
 }
 
-// Тут надо всё менять
 func InfoHandler(target string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req dto.IndustrialCompanies
-
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid JSON"+err.Error(), http.StatusBadRequest)
+		vars := mux.Vars(r)
+		idStr := vars["id"]
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "Invalid ID format", http.StatusBadRequest)
 			return
 		}
 
-		if req.ID == uuid.Nil {
-			req.ID = uuid.New()
+		// Проверяем кэш
+		if company, ok := cache.CacheGet(id); ok {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(company)
+			return
 		}
 
-		cache.CacheRemove(req.ID)
-		cache.CacheCheck(req.ID)
-
-		targetURL := target + "/info"
-
-		jsonData, _ := json.Marshal(req)
-
-		resp, err := http.Post(targetURL, "application/json", bytes.NewBuffer(jsonData))
+		// Запрос к бэкенду (GET, без тела)
+		targetURL := target + "/info/" + idStr
+		resp, err := http.Get(targetURL)
 		if err != nil {
-			http.Error(w, "Failed get answer from server", http.StatusBadGateway)
+			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
 			return
 		}
 		defer resp.Body.Close()
 
-		var response dto.IndustrialCompanies
+		if resp.StatusCode != http.StatusOK {
+			w.WriteHeader(resp.StatusCode)
+			return
+		}
 
+		var response dto.IndustrialCompanies
 		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			http.Error(w, "Failed decode", http.StatusInternalServerError)
+			http.Error(w, "Failed to decode response", http.StatusInternalServerError)
 			return
 		}
 
 		cache.CacheAdd(response.ID, response)
 
-		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			log.Printf("Failed to encode response: %v", err)
-			return
-		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
 func EditHandler(target string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req dto.IndustrialCompanies
+		vars := mux.Vars(r)
+		idStr := vars["id"]
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, "Invalid ID format", http.StatusBadRequest)
+			return
+		}
 
+		var req dto.IndustrialCompanies
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid JSON"+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		if err := cfg.Validate.Struct(&req); err != nil {
-			http.Error(w, "Validation error"+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Validation error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if req.ID == uuid.Nil {
-			req.ID = uuid.New()
-		}
-
-		cache.CacheRemove(req.ID)
-		cache.CacheCheck(req.ID)
-
-		targetURL := target + "/edit"
+		req.ID = id // Принудительно ставим ID из URL
 
 		jsonData, _ := json.Marshal(req)
 
-		resp, err := http.Post(targetURL, "application/json", bytes.NewBuffer(jsonData))
+		resp, err := http.Post(target+"/edit/"+idStr, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
-			http.Error(w, "Failed to get answer from server", http.StatusBadGateway)
+			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
 			return
 		}
-		resp.Body.Close()
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			w.WriteHeader(resp.StatusCode)
+			return
+		}
 
 		var response dto.IndustrialCompanies
-
 		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			http.Error(w, "Failed decode", http.StatusBadRequest)
+			http.Error(w, "Failed to decode response", http.StatusInternalServerError)
 			return
 		}
 
 		cache.CacheAdd(response.ID, response)
 
-		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			log.Printf("Failed to encode response: %v", err)
-			return
-		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
 func DeleteHandler(target string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req dto.IndustrialCompanies
-
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid JSON"+err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if req.ID != uuid.Nil {
-			cache.CacheRemove(req.ID)
-		}
-
-		targetURL := target + "/delete"
-
-		jsonData, _ := json.Marshal(req)
-
-		proxy, err := http.NewRequest(http.MethodDelete, targetURL, bytes.NewBuffer(jsonData))
+		vars := mux.Vars(r)
+		idStr := vars["id"]
+		id, err := uuid.Parse(idStr)
 		if err != nil {
-			http.Error(w, "failed create request to backend", http.StatusBadGateway)
+			http.Error(w, "Invalid ID format", http.StatusBadRequest)
 			return
 		}
 
-		proxy.Header.Set("Content-type", "application/json")
+		cache.CacheRemove(id)
+
+		targetURL := target + "/delete/" + idStr
+		reqBackend, err := http.NewRequest(http.MethodDelete, targetURL, nil)
+		if err != nil {
+			http.Error(w, "Failed to create backend request", http.StatusInternalServerError)
+			return
+		}
+		reqBackend.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
-		resp, err := client.Do(proxy)
+		resp, err := client.Do(reqBackend)
 		if err != nil {
-			http.Error(w, "Failed reach backend", http.StatusBadGateway)
+			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
 			return
 		}
 		defer resp.Body.Close()
 
-		var response dto.IndustrialCompanies
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			http.Error(w, "Failed decode answer from backend", http.StatusBadGateway)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(resp.StatusCode)
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, "Failed encode", http.StatusConflict)
-			return
-		}
+		json.NewEncoder(w).Encode(map[string]string{"message": "Deleted", "id": idStr})
 	}
 }
