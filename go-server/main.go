@@ -11,11 +11,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// ... импорты ...
-
 func main() {
 	cfg.Validate = validator.New()
 	pythonBackend := "http://localhost:8081"
+	golangBFF := "http://localhost:8080"
 	r := mux.NewRouter()
 
 	// Рендеринг страниц
@@ -37,7 +36,7 @@ func main() {
 	}
 	r.PathPrefix("/api/").Handler(http.StripPrefix("/api/", proxy))
 
-	println("BFF (Go - Server): 8080")
+	println("BFF (Go - Server): ", golangBFF)
 	println("Backend: ", pythonBackend)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {

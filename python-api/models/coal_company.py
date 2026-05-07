@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, BigInteger, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, BigInteger, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from models.industrial_companies import IndustrialCompanies, Base
 
 
@@ -7,25 +7,25 @@ class CoalCompany(IndustrialCompanies):
     __tablename__ = 'coal_company'
 
     id = Column(
-        Integer, 
-        ForeignKey('industrial_companies.id', ondelete='CASCADE'), 
+        UUID(as_uuid=True),
+        ForeignKey('industrial_companies.id', ondelete='CASCADE'),
         primary_key=True
     )
-    
+
     coal_volume = Column(BigInteger, nullable=True)
-    mine_count = Column(BigInteger, nullable=True) 
+    mine_count = Column(BigInteger, nullable=True)
     coal_action = Column(String(255), nullable=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'CoalCompany',
     }
 
-    def __init__(self, company_name: str, annual_turnover: int = None, 
-                 coal_volume: int = None, mine_count: int = None, 
-                 holding_companies_id: int = None):
+    def __init__(self, company_name: str, annual_turnover: int = None,
+                 coal_volume: int = None, mine_count: int = None,
+                 holding_companies_id=None):
         super().__init__(
-            company_name, 
-            annual_turnover, 
+            company_name,
+            annual_turnover,
             company_type='CoalCompany',
             holding_companies_id=holding_companies_id
         )

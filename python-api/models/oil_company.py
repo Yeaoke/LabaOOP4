@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, BigInteger, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, BigInteger, String, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from models.industrial_companies import IndustrialCompanies, Base
 
 
@@ -7,11 +7,11 @@ class OilCompany(IndustrialCompanies):
     __tablename__ = 'oil_company'
 
     id = Column(
-        Integer, 
-        ForeignKey('industrial_companies.id', ondelete='CASCADE'), 
+        UUID(as_uuid=True),
+        ForeignKey('industrial_companies.id', ondelete='CASCADE'),
         primary_key=True
     )
-    
+
     oil_volume = Column(BigInteger, nullable=True)
     hole_count = Column(BigInteger, nullable=True)
     oil_action = Column(String(255), nullable=True)
@@ -20,12 +20,12 @@ class OilCompany(IndustrialCompanies):
         'polymorphic_identity': 'OilCompany',
     }
 
-    def __init__(self, company_name: str, annual_turnover: int = None, 
+    def __init__(self, company_name: str, annual_turnover: int = None,
                  oil_volume: int = None, hole_count: int = None,
-                 holding_companies_id: int = None):
+                 holding_companies_id=None):
         super().__init__(
-            company_name, 
-            annual_turnover, 
+            company_name,
+            annual_turnover,
             company_type='OilCompany',
             holding_companies_id=holding_companies_id
         )

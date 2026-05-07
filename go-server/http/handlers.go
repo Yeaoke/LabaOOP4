@@ -6,6 +6,7 @@ import (
 	dto "LabaOOP4/go-server/dto"
 	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 
@@ -27,11 +28,16 @@ func AddHandler(target string) http.HandlerFunc {
 			return
 		}
 
+		// Генерируем UUID если не задан
 		if req.ID == uuid.Nil {
 			req.ID = uuid.New()
 		}
 
-		jsonData, _ := json.Marshal(req)
+		jsonData, err := json.Marshal(req)
+		if err != nil {
+			http.Error(w, "Failed to marshal request", http.StatusInternalServerError)
+			return
+		}
 
 		resp, err := http.Post(target+"/add", "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
@@ -39,6 +45,12 @@ func AddHandler(target string) http.HandlerFunc {
 			return
 		}
 		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			http.Error(w, "Backend error: "+string(body), resp.StatusCode)
+			return
+		}
 
 		var response dto.IndustrialCompanies
 		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
@@ -48,7 +60,8 @@ func AddHandler(target string) http.HandlerFunc {
 
 		cache.CacheAdd(response.ID, response)
 
-		w.WriteHeader(resp.StatusCode)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			log.Printf("Failed to encode response: %v", err)
 		}
@@ -65,16 +78,15 @@ func InfoHandler(target string) http.HandlerFunc {
 			return
 		}
 
-		// Проверяем кэш
+		// Сначала смотрим кэш
 		if company, ok := cache.CacheGet(id); ok {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(company)
 			return
 		}
 
-		// Запрос к бэкенду (GET, без тела)
-		targetURL := target + "/info/" + idStr
-		resp, err := http.Get(targetURL)
+		// Fallback к бэкенду
+		resp, err := http.Get(target + "/info/" + idStr)
 		if err != nil {
 			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
 			return
@@ -121,9 +133,13 @@ func EditHandler(target string) http.HandlerFunc {
 			return
 		}
 
-		req.ID = id // Принудительно ставим ID из URL
+		req.ID = id 
 
-		jsonData, _ := json.Marshal(req)
+		jsonData, err := json.Marshal(req)
+		if err != nil {
+			http.Error(w, "Failed to marshal request", http.StatusInternalServerError)
+			return
+		}
 
 		resp, err := http.Post(target+"/edit/"+idStr, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
@@ -133,7 +149,8 @@ func EditHandler(target string) http.HandlerFunc {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			w.WriteHeader(resp.StatusCode)
+			body, _ := io.ReadAll(resp.Body)
+			http.Error(w, "Backend error: "+string(body), resp.StatusCode)
 			return
 		}
 
@@ -172,14 +189,15 @@ func DeleteHandler(target string) http.HandlerFunc {
 		reqBackend.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
-		resp, err := client.Do(reqBackend)
+		response, err := client.Do(reqBackend)
 		if err != nil {
 			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
 			return
 		}
-		defer resp.Body.Close()
+		defer response.Body.Close()
 
-		w.WriteHeader(resp.StatusCode)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(response.StatusCode)
 		json.NewEncoder(w).Encode(map[string]string{"message": "Deleted", "id": idStr})
 	}
 }
