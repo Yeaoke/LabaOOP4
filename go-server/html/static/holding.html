@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Холдинг: {{.Title}}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f4f6f9; }
+    .navbar { background: linear-gradient(135deg,#1a1f36,#2d3561); }
+    
+    /* Стили карточек (как в index.html) */
+    .company-card {
+      border: none; border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      transition: transform .2s, box-shadow .2s;
+      height: 100%;
+    }
+    .company-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,.13); }
+    .company-card.coal { border-left: 5px solid #495057; }
+    .company-card.oil  { border-left: 5px solid #e8720c; }
+    
+    .type-badge { font-size:.72rem; border-radius:20px; padding:2px 10px; font-weight:600; }
+    .badge-coal { background:#e9ecef; color:#495057; }
+    .badge-oil  { background:#fff3e0; color:#e8720c; }
+    
+    .btn { border-radius: 8px; }
+    
+    /* Заголовок страницы холдинга */
+    .holding-header {
+      background: white;
+      border-radius: 14px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .holding-title { font-size: 1.5rem; font-weight: 700; color: #1a1f36; margin: 0; }
+    .holding-count { color: #6c757d; font-size: 0.9rem; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">🏭 Промышленные компании</a>
+  </div>
+</nav>
+
+<div class="container pb-5">
+  
+  <div class="holding-header">
+    <div>
+      <h1 class="holding-title">🏢 {{.Title}}</h1>
+      <div class="holding-count">
+        Найдено компаний: <strong>{{len .Companies}}</strong>
+      </div>
+    </div>
+    <a href="/" class="btn btn-outline-secondary btn-sm">← Вернуться ко всем</a>
+  </div>
+
+  {{if .Companies}}
+  <div class="row g-3">
+    {{range .Companies}}
+    <div class="col-md-6 col-lg-4">
+      <div class="company-card card {{if eq .CompanyType "coal"}}coal{{else}}oil{{end}}">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="fw-bold mb-0 text-truncate" title="{{.CompanyName}}">{{.CompanyName}}</h6>
+            <span class="type-badge badge-{{.CompanyType}}">
+              {{if eq .CompanyType "coal"}}⛏️ Угольная{{else}}🛢️ Нефтяная{{end}}
+            </span>
+          </div>
+
+          <div class="text-muted small mb-1">
+            💰 Оборот: <strong>{{.AnnualTurnover}}</strong> млн ₽
+          </div>
+          
+          {{if eq .CompanyType "coal"}}
+            <div class="text-muted small mt-2">
+              ⛏️ Добыча: <strong>{{.Coal_volume}}</strong> тыс.т<br>
+              🕳️ Шахт: <strong>{{.MineCount}}</strong>
+            </div>
+          {{else}}
+            <div class="text-muted small mt-2">
+              🛢️ Добыча: <strong>{{.Oil_volume}}</strong> тыс.барр.<br>
+              🕳️ Скважин: <strong>{{.HoleCount}}</strong>
+            </div>
+          {{end}}
+
+          
+            <a href="/info/{{.ID}}" class="btn btn-outline-info btn-sm">👁️ Подробнее</a>
+            <div class="d-flex gap-2">
+                <a href="/edit/{{.ID}}" class="btn btn-outline-warning btn-sm w-50">✏️ Изм.</a>
+              
+                <a href="/delete/{{.ID}}" class="btn btn-outline-danger btn-sm w-50">🗑️</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{end}}
+  </div>
+
+  {{else}}
+  <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+    <div style="font-size:4rem">📭</div>
+    <h5 class="mt-3 text-muted">В холдинге "{{.Title}}" пока нет компаний</h5>
+    <p class="small text-muted">Чтобы добавить компанию в этот холдинг, создайте новую компанию или отредактируйте существующую, указав это название в поле "Холдинг".</p>
+    <a href="/" class="btn btn-primary mt-2">Перейти к списку всех компаний</a>
+  </div>
+  {{end}}
+
+</div>
+
+</body>
+</html>

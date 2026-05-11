@@ -1,76 +1,90 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Удаление компании</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .delete-card { border-color: #dc3545; }
-        .delete-card .card-header { background-color: #dc3545; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Удалить — {{.Company.CompanyName}}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f4f6f9; }
+    .navbar { background: linear-gradient(135deg,#1a1f36,#2d3561); }
+    .del-card { border:none; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.08); border-top:5px solid #dc3545; }
+    .field-row { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f0f0f0; }
+    .field-row:last-child { border:none; }
+    .field-key { color:#6c757d; font-size:.88rem; }
+    .field-val { font-weight:600; }
+    .btn { border-radius:8px; }
+  </style>
 </head>
 <body>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow delete-card">
-                <div class="card-header text-white">
-                    <h4 class="mb-0">⚠️ Подтверждение удаления</h4>
-                </div>
-                <div class="card-body">
-                    <p class="lead">Вы действительно хотите удалить компанию?</p>
-                    
-                    <div class="alert alert-light border mb-4">
-                        <h5 class="alert-heading">{{.Company.CompanyName}}</h5>
-                        <hr class="my-2">
-                        <p class="mb-1"><strong>ID:</strong> <code>{{.Company.ID}}</code></p>
-                        <p class="mb-1"><strong>Тип:</strong> 
-                            {{if eq .Company.CompanyType "coal"}}⛏️ Угольная{{else}}🛢️ Нефтяная{{end}}
-                        </p>
-                        <p class="mb-0"><strong>Оборот:</strong> {{.Company.AnnualTurnover}} млн ₽</p>
-                    </div>
 
-                    <div class="alert alert-warning">
-                        <small>⚠️ Это действие нельзя отменить. Все данные компании будут безвозвратно удалены.</small>
-                    </div>
+<nav class="navbar navbar-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">🏭 Промышленные компании</a>
+  </div>
+</nav>
 
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="/" class="btn btn-secondary me-md-2">❌ Отмена</a>
-                        <button id="deleteBtn" class="btn btn-danger">🗑️ Да, удалить</button>
-                    </div>
-                </div>
-            </div>
+<div class="container pb-5" style="max-width:520px">
+  <div class="del-card card">
+    <div class="card-body p-4">
+      <h4 class="fw-bold text-danger mb-1">⚠️ Подтверждение удаления</h4>
+      <p class="text-muted small mb-4">Это действие нельзя отменить</p>
+
+      <div class="mb-4">
+        <div class="field-row">
+          <span class="field-key">Название</span>
+          <span class="field-val">{{.Company.CompanyName}}</span>
         </div>
+        <div class="field-row">
+          <span class="field-key">Тип</span>
+          <span class="field-val">{{if eq .Company.CompanyType "coal"}}⛏️ Угольная{{else}}🛢️ Нефтяная{{end}}</span>
+        </div>
+        <div class="field-row">
+          <span class="field-key">Оборот</span>
+          <span class="field-val">{{.Company.AnnualTurnover}} млн ₽</span>
+        </div>
+        {{if .Company.HoldingName}}
+        <div class="field-row">
+          <span class="field-key">Холдинг</span>
+          <span class="field-val">{{.Company.HoldingName}}</span>
+        </div>
+        {{end}}
+      </div>
+
+      <div class="alert alert-warning py-2">
+        <small>Все данные компании будут безвозвратно удалены из базы данных.</small>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-danger px-4" onclick="confirmDelete()">🗑️ Да, удалить</button>
+        <a href="/" class="btn btn-outline-secondary">❌ Отмена</a>
+      </div>
+
+      <div id="errBox" class="alert alert-danger mt-3" style="display:none"></div>
     </div>
+  </div>
 </div>
 
 <script>
-document.getElementById('deleteBtn').addEventListener('click', async function() {
-    const companyId = "{{.Company.ID}}";
-    
-    if (!confirm("Вы уверены? Это действие нельзя отменить.")) {
-        return;
-    }
+  const companyId = "{{.Company.ID}}";
 
+  async function confirmDelete() {
     try {
-        const response = await fetch(`/api/delete/${companyId}`, {
-            method: 'DELETE',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: companyId })
-        });
-        
-        if (response.ok) {
-            // Успешно удалено — редирект на главную
-            window.location.href = '/?deleted=1';
-        } else {
-            const err = await response.text();
-            alert('Ошибка при удалении: ' + err);
-        }
-    } catch (err) {
-        console.error('Error:', err);
-        alert('Ошибка сети: ' + err.message);
+      const r = await fetch('/api/delete/' + companyId, {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+      });
+      if (r.ok) {
+        window.location.href = '/?deleted=1';
+      } else {
+        const txt = await r.text();
+        document.getElementById('errBox').textContent = 'Ошибка: ' + txt;
+        document.getElementById('errBox').style.display = '';
+      }
+    } catch(e) {
+      document.getElementById('errBox').textContent = 'Ошибка сети: ' + e.message;
+      document.getElementById('errBox').style.display = '';
     }
-});
+  }
 </script>
 </body>
 </html>

@@ -9,10 +9,49 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
+
+func FilterHandler(target string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query().Get("q")
+		if query == "" {
+			http.Error(w, "Parameter 'q' is required", http.StatusBadRequest)
+			return
+		}
+
+		resp, err := http.Get(target + "/")
+		if err != nil {
+			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
+			return
+		}
+		defer resp.Body.Close()
+
+		var allCompanies []dto.IndustrialCompanies
+		if err := json.NewDecoder(resp.Body).Decode(&allCompanies); err != nil {
+			http.Error(w, "Failed to decode companies", http.StatusInternalServerError)
+			return
+		}
+
+		query = strings.ToLower(query)
+		var filtered []dto.IndustrialCompanies
+
+		for _, c := range allCompanies {
+			if strings.Contains(strings.ToLower(c.CompanyName), query) {
+				filtered = append(filtered, c)
+				if c.ID != uuid.Nil {
+					cache.CacheAdd(c.ID, c)
+				}
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(filtered)
+	}
+}
 
 func AddHandler(target string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +67,6 @@ func AddHandler(target string) http.HandlerFunc {
 			return
 		}
 
-		// Генерируем UUID если не задан
 		if req.ID == uuid.Nil {
 			req.ID = uuid.New()
 		}
@@ -46,14 +84,16 @@ func AddHandler(target string) http.HandlerFunc {
 		}
 		defer resp.Body.Close()
 
+		body, _ := io.ReadAll(resp.Body)
+
 		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
+			log.Printf("[AddHandler] backend error %d: %s", resp.StatusCode, string(body))
 			http.Error(w, "Backend error: "+string(body), resp.StatusCode)
 			return
 		}
 
 		var response dto.IndustrialCompanies
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		if err := json.Unmarshal(body, &response); err != nil {
 			http.Error(w, "Failed to decode response", http.StatusInternalServerError)
 			return
 		}
@@ -62,9 +102,7 @@ func AddHandler(target string) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			log.Printf("Failed to encode response: %v", err)
-		}
+		w.Write(body)
 	}
 }
 
@@ -78,14 +116,12 @@ func InfoHandler(target string) http.HandlerFunc {
 			return
 		}
 
-		// Сначала смотрим кэш
 		if company, ok := cache.CacheGet(id); ok {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(company)
 			return
 		}
 
-		// Fallback к бэкенду
 		resp, err := http.Get(target + "/info/" + idStr)
 		if err != nil {
 			http.Error(w, "Failed to reach backend", http.StatusBadGateway)
@@ -93,13 +129,16 @@ func InfoHandler(target string) http.HandlerFunc {
 		}
 		defer resp.Body.Close()
 
+		body, _ := io.ReadAll(resp.Body)
+
 		if resp.StatusCode != http.StatusOK {
 			w.WriteHeader(resp.StatusCode)
+			w.Write(body)
 			return
 		}
 
 		var response dto.IndustrialCompanies
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		if err := json.Unmarshal(body, &response); err != nil {
 			http.Error(w, "Failed to decode response", http.StatusInternalServerError)
 			return
 		}
@@ -108,7 +147,7 @@ func InfoHandler(target string) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
+		w.Write(body)
 	}
 }
 
@@ -133,7 +172,7 @@ func EditHandler(target string) http.HandlerFunc {
 			return
 		}
 
-		req.ID = id 
+		req.ID = id
 
 		jsonData, err := json.Marshal(req)
 		if err != nil {
@@ -148,14 +187,16 @@ func EditHandler(target string) http.HandlerFunc {
 		}
 		defer resp.Body.Close()
 
+		body, _ := io.ReadAll(resp.Body)
+
 		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
+			log.Printf("[EditHandler] backend error %d: %s", resp.StatusCode, string(body))
 			http.Error(w, "Backend error: "+string(body), resp.StatusCode)
 			return
 		}
 
 		var response dto.IndustrialCompanies
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		if err := json.Unmarshal(body, &response); err != nil {
 			http.Error(w, "Failed to decode response", http.StatusInternalServerError)
 			return
 		}
@@ -164,7 +205,7 @@ func EditHandler(target string) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
+		w.Write(body)
 	}
 }
 
@@ -180,8 +221,7 @@ func DeleteHandler(target string) http.HandlerFunc {
 
 		cache.CacheRemove(id)
 
-		targetURL := target + "/delete/" + idStr
-		reqBackend, err := http.NewRequest(http.MethodDelete, targetURL, nil)
+		reqBackend, err := http.NewRequest(http.MethodDelete, target+"/delete/"+idStr, nil)
 		if err != nil {
 			http.Error(w, "Failed to create backend request", http.StatusInternalServerError)
 			return

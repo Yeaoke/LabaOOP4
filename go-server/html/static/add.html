@@ -1,126 +1,144 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Добавить компанию</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script>
-        function toggleFields() {
-            const type = document.getElementById('type').value;
-            document.getElementById('coalFields').style.display = type === 'coal' ? 'block' : 'none';
-            document.getElementById('oilFields').style.display = type === 'oil' ? 'block' : 'none';
-        }
-    </script>
+  <meta charset="UTF-8">
+  <title>Добавить компанию</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f4f6f9; }
+    .navbar { background: linear-gradient(135deg,#1a1f36,#2d3561); }
+    .form-card { border:none; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+    .section-header { font-size:.85rem; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:.5px; }
+    .btn { border-radius:8px; }
+    .form-control, .form-select { border-radius:8px; }
+  </style>
 </head>
 <body>
-<div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-success text-white">
-            <h2 class="mb-0">➕ Добавить промышленную компанию</h2>
-        </div>
-        <div class="card-body">
-            <form action="/api/add" method="post" id="addForm">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Название компании:</label>
-                    <input type="text" name="company_name" class="form-control" placeholder="Введите название" required>
-                </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Тип компании:</label>
-                    <select name="company_type" id="type" class="form-select" onchange="toggleFields()" required>
-                        <option value="coal">⛏️ Угольная</option>
-                        <option value="oil">🛢️ Нефтяная</option>
-                    </select>
-                </div>
+<nav class="navbar navbar-dark mb-4">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">🏭 Промышленные компании</a>
+  </div>
+</nav>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Годовой оборот (млн руб):</label>
-                    <input type="number" name="annual_turnover" class="form-control" placeholder="Например: 5000" required min="0">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Название холдинга (опционально):</label>
-                    <input type="text" name="holding_name" class="form-control" placeholder="Введите название холдинга">
-                </div>
-
-                <!-- Поля для угольной компании -->
-                <div id="coalFields">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Объем добычи угля (тыс. тонн):</label>
-                        <input type="number" name="coal_volume" class="form-control" placeholder="Например: 1200" min="0">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Количество шахт:</label>
-                        <input type="number" name="mineCount" class="form-control" placeholder="Например: 5" min="1">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Действие по углю:</label>
-                        <textarea name="coal_action" class="form-control" rows="2" placeholder="Описание действий..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Поля для нефтяной компании -->
-                <div id="oilFields" style="display:none">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Объем добычи нефти (тыс. баррелей):</label>
-                        <input type="number" name="oil_volume" class="form-control" placeholder="Например: 800" min="0">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Количество скважин:</label>
-                        <input type="number" name="holeCount" class="form-control" placeholder="Например: 25" min="1">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Действие по нефти:</label>
-                        <textarea name="oil_action" class="form-control" rows="2" placeholder="Описание действий..."></textarea>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">💾 Сохранить</button>
-                    <a href="/" class="btn btn-secondary">❌ Отмена</a>
-                </div>
-            </form>
-        </div>
+<div class="container pb-5" style="max-width:700px">
+  <div class="form-card card">
+    <div class="card-header border-0 pt-4 pb-0 bg-white">
+      <h4 class="fw-bold">➕ Добавить компанию</h4>
     </div>
+    <div class="card-body p-4">
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Название *</label>
+          <input id="f_name" class="form-control" placeholder="ООО Ромашка">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Тип компании *</label>
+          <select id="f_type" class="form-select" onchange="toggleFields()">
+            <option value="coal">⛏️ Угольная</option>
+            <option value="oil">🛢️ Нефтяная</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Годовой оборот (млн ₽)</label>
+          <input id="f_turnover" type="number" class="form-control" placeholder="5000" min="0">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Холдинг <span class="text-muted fw-normal">(необязательно)</span></label>
+          <input id="f_holding" class="form-control" placeholder="Название холдинга">
+        </div>
+      </div>
+
+      <div id="coalFields" class="mt-4">
+        <div class="section-header mb-3">⛏️ Данные угольной компании</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Объём добычи угля (тыс. т)</label>
+            <input id="f_coal_volume" type="number" class="form-control" placeholder="1200" min="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Количество шахт</label>
+            <input id="f_mine_count" type="number" class="form-control" placeholder="5" min="0">
+          </div>
+        </div>
+      </div>
+
+      <div id="oilFields" class="mt-4" style="display:none">
+        <div class="section-header mb-3">🛢️ Данные нефтяной компании</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Объём добычи нефти (тыс. барр.)</label>
+            <input id="f_oil_volume" type="number" class="form-control" placeholder="800" min="0">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Количество скважин</label>
+            <input id="f_hole_count" type="number" class="form-control" placeholder="25" min="0">
+          </div>
+        </div>
+      </div>
+
+      <div id="errBox" class="alert alert-danger mt-3" style="display:none"></div>
+
+      <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-success px-4" onclick="submitForm()">💾 Сохранить</button>
+        <a href="/" class="btn btn-outline-secondary">❌ Отмена</a>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-toggleFields();
+  function toggleFields() {
+    const isCoal = document.getElementById('f_type').value === 'coal';
+    document.getElementById('coalFields').style.display = isCoal ? '' : 'none';
+    document.getElementById('oilFields').style.display  = isCoal ? 'none' : '';
+  }
 
-// Обработка формы через fetch для JSON
-document.getElementById('addForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const data = {};
-    formData.forEach((value, key) => {
-        if (value) {
-            // Преобразуем числовые поля
-            if (['annual_turnover', 'coal_volume', 'mineCount', 'oil_volume', 'holeCount'].includes(key)) {
-                data[key] = parseInt(value) || 0;
-            } else {
-                data[key] = value;
-            }
-        }
-    });
+  async function submitForm() {
+    const name = document.getElementById('f_name').value.trim();
+    const type = document.getElementById('f_type').value;
+
+    if (!name) { showErr('Введите название компании'); return; }
+
+    const payload = {
+      company_name:    name,
+      company_type:    type,
+      annual_turnover: parseInt(document.getElementById('f_turnover').value) || 0,
+    };
+    const holding = document.getElementById('f_holding').value.trim();
+    if (holding) payload.holding_name = holding;
+
+    if (type === 'coal') {
+      payload.coal_volume = parseInt(document.getElementById('f_coal_volume').value) || 0;
+      payload.mineCount   = parseInt(document.getElementById('f_mine_count').value)  || 0;
+    } else {
+      payload.oil_volume = parseInt(document.getElementById('f_oil_volume').value) || 0;
+      payload.holeCount  = parseInt(document.getElementById('f_hole_count').value)  || 0;
+    }
 
     try {
-        const response = await fetch('/api/add', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        
-        if (response.ok) {
-            window.location.href = '/';
-        } else {
-            const err = await response.text();
-            alert('Ошибка: ' + err);
-        }
-    } catch (err) {
-        alert('Ошибка сети: ' + err.message);
+      const r = await fetch('/api/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+      });
+      if (r.ok) {
+        window.location.href = '/?added=1';
+      } else {
+        const txt = await r.text();
+        showErr('Ошибка: ' + txt);
+      }
+    } catch (e) {
+      showErr('Ошибка сети: ' + e.message);
     }
-});
+  }
+
+  function showErr(msg) {
+    const b = document.getElementById('errBox');
+    b.textContent = msg;
+    b.style.display = '';
+  }
 </script>
 </body>
 </html>

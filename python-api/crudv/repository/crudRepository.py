@@ -10,7 +10,6 @@ class crudRepository(Generic[T]):
         self.model = model
 
     def get(self, db: Session, id: Any) -> Optional[T]:
-        # Принимаем и строку, и UUID-объект
         if isinstance(id, str):
             try:
                 id = uuid.UUID(id)
@@ -25,7 +24,6 @@ class crudRepository(Generic[T]):
 
         company_type = obj_in_data.get("company_type", "")
 
-        # Нормализация типа: принимаем оба формата
         if company_type in ("coal", "CoalCompany"):
             model_cls = CoalCompany
         elif company_type in ("oil", "OilCompany"):
@@ -33,7 +31,6 @@ class crudRepository(Generic[T]):
         else:
             raise ValueError(f"Unknown company_type: {company_type!r}")
 
-        # Обработка холдинга по имени
         holding_id = None
         holding_name = obj_in_data.get("holding_name")
         if holding_name and holding_name.strip():
@@ -44,7 +41,6 @@ class crudRepository(Generic[T]):
                 db.flush()
             holding_id = holding.id
 
-        # Создание объекта нужного класса
         if model_cls == CoalCompany:
             obj = CoalCompany(
                 company_name=obj_in_data.get("company_name"),
@@ -66,12 +62,11 @@ class crudRepository(Generic[T]):
             if obj_in_data.get("oil_action"):
                 obj.oil_action = obj_in_data["oil_action"]
 
-        # Если Go передал UUID — используем его, иначе генерируем новый
         raw_id = obj_in_data.get("id")
         if raw_id:
             try:
                 parsed_id = uuid.UUID(str(raw_id))
-                # Проверяем, что это не нулевой UUID
+
                 if parsed_id != uuid.UUID(int=0):
                     obj.id = parsed_id
             except (ValueError, AttributeError):
